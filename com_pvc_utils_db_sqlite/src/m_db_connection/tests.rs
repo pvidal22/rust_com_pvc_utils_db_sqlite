@@ -21,7 +21,7 @@ fn db_creation_01()
         std::fs::remove_file(db_path).unwrap(); // TO make sure it panics with a "clear" error.
     }
 
-    let _ = SDB::initialize_db_pool(Some(&db_name));
+    let _ = SDB::initialize_db_pool(&db_name);
 
     assert_eq!(true, db_path.exists());
     
@@ -57,7 +57,7 @@ fn db_table_creation_01()
             PRIMARY KEY('id')
         );";
 
-        let db = SDB::initialize_db_pool(Some(&db_name));
+        let db = SDB::initialize_db_pool(&db_name);
         assert_eq!(true, db_path.exists());
         let mut conn = db.get_db_connection().unwrap();
         let tr = conn.start_transaction().unwrap();
@@ -91,7 +91,7 @@ fn db_record_creation_01()
     }
 
     {
-        let db = SDB::initialize_db_pool(Some(&db_name));
+        let db = SDB::initialize_db_pool(&db_name);
         let mut conn_table = db.get_db_connection().unwrap();
         let mut conn_record = db.get_db_connection().unwrap();
         let conn_read = db.get_db_connection().unwrap();

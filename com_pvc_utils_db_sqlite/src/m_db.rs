@@ -2,24 +2,18 @@
 //! # History
 //! * Version 20250125_01
 //!     First version
-use std::sync::RwLock;
-
 use com_pvc_utils_logs::{log_error, log_info, log_warning, m_slogs_std::*};
 use com_pvc_utils_pool::m_pool::SPool;
 use rusqlite::Connection;
-
 use crate::{m_db_connection::SDBConnection, EDBError};
 
-
-const DB_PROD: &str = "./friend_portal_prod.db";
 const DB_INITIAL_CONN: usize = 1;
 const DB_MAX_CONN: usize = 20;
-
-static DB_NAME: RwLock<String> = RwLock::new(String::new());
 
 pub struct SDB
 {
     db_pool: SPool<SDBConnection>,
+    db_name: String,
 }
 
 impl SDB
@@ -27,29 +21,28 @@ impl SDB
     /// Method to initiliaze the DB pool that will be used afterwards during the rest of the execution.
     /// # Arguments
     /// * test_db_name should only be used for testing, otherwise, use None
-    pub fn initialize_db_pool(test_db_name: Option<&str>) -> Self
+    pub fn initialize_db_pool(db_name: &str) -> Self
     {
-        log_info!("Making connection");    
-        let db_name = if cfg!(test) {test_db_name.unwrap()} else {DB_PROD};
+        log_info!("Making connection");
         log_info!(&format!("DB Name: {db_name}"));
-        let a = DB_NAME.write();
-        if let Err(e) = a
-        {
-            let msg = format!("Problem assigning the Database name by lock: {}", e.to_string());
-            log_error!(&msg);
-            panic!("{}", msg);
-        }
+        // let a = DB_NAME.write();
+        // if let Err(e) = a
+        // {
+        //     let msg = format!("Problem assigning the Database name by lock: {}", e.to_string());
+        //     log_error!(&msg);
+        //     panic!("{}", msg);
+        // }
 
-        let mut a = a.unwrap();
-        *a = db_name.to_string();
-        drop(a);
+        // let mut a = a.unwrap();
+        // *a = db_name.to_string();
+        // drop(a);
     
         // Creating the rusqlite connections pool
         let mut conn_pool = Vec::new();        
         for lii in 0..DB_INITIAL_CONN
         {
             conn_pool.push(SDBConnection::new(
-                SDB::create_new_connection(true).unwrap()
+                SDB::create_new_connection(&db_name, true).unwrap()
             ));
             log_info!(format!("Created connection: {} out of {}", lii, DB_MAX_CONN))
         }
@@ -57,13 +50,13 @@ impl SDB
         SDB
         {
             db_pool: pool,
+            db_name: db_name.to_owned(),
         }
     }
 
-    fn create_new_connection(panic_when_error: bool) -> Result<Connection, EDBError>
+    fn create_new_connection(db_name: &str, panic_when_error: bool) -> Result<Connection, EDBError>
     {
-        let db = &*DB_NAME.read().expect("Cannot be opened the DB_name for reading");
-        let conn = Connection::open(db);
+        let conn = Connection::open(db_name);
         if let Err(e) = conn
         {
             log_error!(&format!("Error connecting to DB {}", e.to_string()));
@@ -90,7 +83,7 @@ impl SDB
             Some(c) => return Ok(c),
             None => 
             {                
-                return Ok(SDBConnection::new(SDB::create_new_connection(false)?));
+                return Ok(SDBConnection::new(SDB::create_new_connection(&self.db_name, false)?));
             }            
         };
     }
