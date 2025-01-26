@@ -1,3 +1,4 @@
+use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
 use rusqlite::{Connection, Statement, Transaction};
 
 use crate::{EDBError, TypeDBRowOfStrings};
@@ -49,7 +50,8 @@ impl SDBConnection
             loop
             {
                 let raw_value = row.get_ref(lii);
-                println!("Raw_value: {:?}", raw_value);
+                log_debug!(format!("Raw_value_in_single_query: {:?}", raw_value));
+                //println!("Raw_value: {:?}", raw_value);
                 if raw_value.is_err() 
                     {break;}
                 let raw_value = raw_value.unwrap();
