@@ -38,17 +38,19 @@ impl SDBConnection
             .map_err(|e| EDBError::SERVERDBExecutingQuery(e.to_string()))        
     }
 
-    pub fn single_query_row_as_vector_of_strings<P>(&self, sql: &str, params: P) -> Option<TypeDBRowOfStrings>
+    pub fn get_single_query_row_as_vector_of_strings<P>(&self, sql: &str, params: P) -> Option<TypeDBRowOfStrings>
     where P: rusqlite::Params
     {
         let a = self.connection.query_row(sql, params
             , |row| 
         {
+            println!("row: {:?}", row);
             let mut row_strings: TypeDBRowOfStrings = Vec::new();
             let mut lii = 0;
             loop
             {
                 let a: Result<String, _> = row.get(lii).into();
+                println!("A: {:?}", a);
                 match a
                 {
                     Ok(value) => _ = row_strings.push(value),

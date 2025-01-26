@@ -113,11 +113,11 @@ fn db_record_creation_01()
             m_db_connection::commit_transaction(tr_record).unwrap();
                         
             let sql = "select * from tsettings where id = 'test3'";
-            let rst = conn_read.single_query_row_as_vector_of_strings(sql, ());
+            let rst = conn_read.get_single_query_row_as_vector_of_strings(sql, ());
             assert_eq!(rst, None);
 
             let sql = "select value from tsettings where id = 'test1'";
-            let value = conn_read.single_query_row_as_vector_of_strings(sql, ()).unwrap();
+            let value = conn_read.get_single_query_row_as_vector_of_strings(sql, ()).unwrap();
             let value = value.get(0).unwrap();
             assert_eq!(value, "test2");
             db.release_connection(conn_table);
