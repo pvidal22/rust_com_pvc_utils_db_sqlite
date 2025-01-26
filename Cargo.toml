@@ -1,0 +1,9 @@
+
+[workspace]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+resolver="2"
+
+members = [ 
+    "com_pvc_utils_db_sqlite"
+    ,"main_com_pvc_utils_db_sqlite"    
+]
