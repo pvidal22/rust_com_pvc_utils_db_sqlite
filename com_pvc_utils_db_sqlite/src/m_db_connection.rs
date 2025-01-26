@@ -46,7 +46,7 @@ impl SDBConnection
         {
             println!("row: {:?}", row);
             let mut row_strings: TypeDBRowOfStrings = Vec::new();
-            let mut lii = 0;
+            let mut lii = 0; // Starting from field 1
             loop
             {
                 let a: Result<String, _> = row.get(lii).into();
