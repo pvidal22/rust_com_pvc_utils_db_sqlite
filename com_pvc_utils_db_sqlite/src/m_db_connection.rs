@@ -23,7 +23,7 @@ impl SDBConnection
     }
 
     #[allow(dead_code)]
-    pub (crate) fn prepare_stmt_for_query<'a>(&'a self, sql: &str) -> Result<Statement<'a>, EDBError>
+    pub fn prepare_stmt_for_query<'a>(&'a self, sql: &str) -> Result<Statement<'a>, EDBError>
     {
         let stmt = self.connection.prepare(sql)
             .map_err(|e| EDBError::SERVERDBPrepareQuery(e.to_string()))?;
