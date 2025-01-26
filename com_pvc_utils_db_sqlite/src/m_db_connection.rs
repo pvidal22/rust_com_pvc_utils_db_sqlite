@@ -43,19 +43,29 @@ impl SDBConnection
     {
         let a = self.connection.query_row(sql, params
             , |row| 
-        {
-            println!("row: {:?}", row);
+        {            
             let mut row_strings: TypeDBRowOfStrings = Vec::new();
             let mut lii = 0; // Starting from field 1
             loop
             {
-                let a: Result<String, _> = row.get(lii).into();
-                println!("A: {:?}", a);
-                match a
-                {
-                    Ok(value) => _ = row_strings.push(value),
-                    Err(_) => break,
-                }
+                let raw_value = row.get_ref(lii);
+                println!("Raw_value: {:?}", raw_value);
+                if raw_value.is_err() 
+                    {break;}
+                let raw_value = raw_value.unwrap();
+                let value_final = match raw_value
+                    {
+                        rusqlite::types::ValueRef::Null => "null".to_string(),
+                        rusqlite::types::ValueRef::Integer(value) => value.to_string(),
+                        rusqlite::types::ValueRef::Real(value) => value.to_string(),
+                        rusqlite::types::ValueRef::Text(_) => 
+                            {
+                                let value: String = row.get(lii).unwrap();
+                                value
+                            },
+                        rusqlite::types::ValueRef::Blob(_) => "Blob".to_string(),
+                    };
+                row_strings.push(value_final);
                 lii += 1;
             }
             if row_strings.is_empty()
