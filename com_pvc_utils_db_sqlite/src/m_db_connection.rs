@@ -1,5 +1,5 @@
 use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
-use rusqlite::{Connection, Row, Statement, Transaction};
+use rusqlite::{Connection, Row, Rows, Statement, Transaction};
 
 use crate::{m_db_query_return::TypeDBRowOfStrings, EDBError};
 
@@ -107,3 +107,39 @@ fn row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, rusqlite::E
         Ok(row_strings)            
     }        
 }
+
+pub fn get_rows_as_query_return(rows: &Rows) -> Result<TypeDBRowOfStrings, EDBError>
+{
+    let mut number_columns = 0;
+    let first_time = true;
+    while let Some(row) = rows.next()?
+    {
+        if first_time
+        {
+            number_columns = get_number_of_columns(row)?;
+            let fields = get_fields(row, number_columns);
+        }
+    }
+    row_as_vector_of_strings(row)
+        .map_err(|e| EDBError::DBRusqlitepopulated(e.to_string()))
+}
+
+fn get_number_of_columns(row: &Row) -> Result<usize, EDBError>
+{
+    let mut index = 0;
+    loop 
+    {
+        let col = row.get_ref(index);
+        if col.is_err()
+        {
+            index -= 1;
+            return Ok(index);
+        }
+    }    
+}
+
+fn get_fields(row: &Row, columns: usize) 
+{
+    DOIN THIS.....
+}
+
