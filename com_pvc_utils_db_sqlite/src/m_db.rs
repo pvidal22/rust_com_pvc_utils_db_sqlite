@@ -62,7 +62,7 @@ impl SDB
             log_error!(&format!("Error connecting to DB {}", e.to_string()));
             if panic_when_error
                 {panic!("{}", e);}
-            return Err(EDBError::SERVERDBConnectionNotAvailable(String::from("Connection not available")));
+            return Err(EDBError::DBConnectionNotAvailable(String::from("Connection not available")));
         }
         let a = conn.unwrap();
         Ok(a)
