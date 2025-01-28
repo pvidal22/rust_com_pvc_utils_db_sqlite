@@ -1,15 +1,25 @@
+#[derive(Clone, Debug)]
+pub enum EDBFieldType
+{
+    Null,
+    Integer,
+    Real,
+    Text,
+    Blob,
+}
+
 pub struct SDBField
 {
     id: String,
-    field_type: String, 
+    field_type: EDBFieldType, 
 }
 
 impl SDBField
 {
-    pub fn new(id: &str, field_type: &str) -> Self
+    pub fn new(id: &str, field_type: EDBFieldType) -> Self
     {
         SDBField
-        { id: id.to_owned(), field_type: field_type.to_lowercase().to_owned() }
+        { id: id.to_owned(), field_type }
     }
 
     pub fn get_id(&self) -> &str
@@ -17,7 +27,7 @@ impl SDBField
         &self.id
     }
 
-    pub fn get_field_type(&self) -> &str
+    pub fn get_field_type(&self) -> &EDBFieldType
     {
         &self.field_type
     }

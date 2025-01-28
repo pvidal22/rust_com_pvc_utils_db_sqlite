@@ -11,7 +11,7 @@ pub mod m_db_field;
 pub mod m_db_query_return;
 pub mod m_db;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EDBError
 {
     DBConnectionNotAvailable(String),

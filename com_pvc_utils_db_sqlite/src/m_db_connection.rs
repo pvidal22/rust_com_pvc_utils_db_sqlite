@@ -1,7 +1,7 @@
 use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
 use rusqlite::{Connection, Row, Rows, Statement, Transaction};
 
-use crate::{m_db_query_return::TypeDBRowOfStrings, EDBError};
+use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::TypeDBRowOfStrings, EDBError};
 
 pub const DB_NONE_VALUE: &str = "None";
 pub const DB_BLOB_VALUE: &str = "Blob";
@@ -108,38 +108,70 @@ fn row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, rusqlite::E
     }        
 }
 
-pub fn get_rows_as_query_return(rows: &Rows) -> Result<TypeDBRowOfStrings, EDBError>
+// Method to return the query records with as SDBQueryReturn. 
+// If no record is returned will be issued a EDBError:QueryReturnednoRows
+pub fn get_rows_as_query_return(stmt: &Statement, rows: &mut Rows) -> Result<TypeDBRowOfStrings, EDBError>
 {
-    let mut number_columns = 0;
-    let first_time = true;
+    println!("DEBUG");
+    let number_columns = stmt.column_count();
+    let column_names = stmt.column_names();
+    let mut first_time = true;    
+    let mut records = 0;
     while let Some(row) = rows.next()?
     {
+        records += 1;        
         if first_time
         {
-            number_columns = get_number_of_columns(row)?;
-            let fields = get_fields(row, number_columns);
+            let fields = get_field_types(row, &column_names);
+            first_time = false;
         }
     }
-    row_as_vector_of_strings(row)
-        .map_err(|e| EDBError::DBRusqlitepopulated(e.to_string()))
+    // row_as_vector_of_strings(row)
+    //     .map_err(|e| EDBError::DBRusqlitepopulated(e.to_string()))
+    if records == 0
+    {
+        return Err(EDBError::DBQueryReturnedNoRows);
+    }
+
+    Err(EDBError::DBConnectionNotAvailable("hola".to_string()))
+    
 }
 
 fn get_number_of_columns(row: &Row) -> Result<usize, EDBError>
 {
+    println!("DEBUG number of columns");
     let mut index = 0;
     loop 
     {
         let col = row.get_ref(index);
         if col.is_err()
-        {
-            index -= 1;
+        {        
             return Ok(index);
         }
+        index += 1;
     }    
 }
 
-fn get_fields(row: &Row, columns: usize) 
+fn get_field_types(row: &Row, column_names: &Vec<&str>) //-> Result<, EDBError>
 {
-    DOIN THIS.....
+    let mut fields = Vec::new();
+    println!("DEBUG row: {:?}", row);
+    for idx_column in 0..column_names.len()
+    {
+        let column = row.get_ref(idx_column).unwrap();
+        
+        println!("DEBUG REF_Value: {:?}", column);
+        let field = match column
+            {
+                rusqlite::types::ValueRef::Null => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Null),
+                rusqlite::types::ValueRef::Integer(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Integer),
+                rusqlite::types::ValueRef::Real(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Real),
+                rusqlite::types::ValueRef::Text(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Text),
+                rusqlite::types::ValueRef::Blob(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Blob),
+            };
+        fields.push(field);
+    }
+
+    HE DE RETORNA AIXÔ.-..
 }
 
