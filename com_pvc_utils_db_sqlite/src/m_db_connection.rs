@@ -1,7 +1,7 @@
 use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
 use rusqlite::{Connection, Row, Rows, Statement, Transaction};
 
-use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::TypeDBRowOfStrings, EDBError};
+use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::{SDBQueryReturn, TypeDBRowOfStrings}, EDBError};
 
 pub const DB_NONE_VALUE: &str = "None";
 pub const DB_BLOB_VALUE: &str = "Blob";
@@ -110,34 +110,40 @@ fn row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, rusqlite::E
 
 // Method to return the query records with as SDBQueryReturn. 
 // If no record is returned will be issued a EDBError:QueryReturnednoRows
-pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Result<TypeDBRowOfStrings, EDBError>
+pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Result<SDBQueryReturn, EDBError>
 {
+    let mut query_return = SDBQueryReturn::default();
     println!("DEBUG");
     let mut stmt = conn.prepare_stmt_for_query(sql)?;
-    let number_columns = stmt.column_count();
     let column_names = stmt.column_names()
         .iter().map(|x| x.to_string())
         .collect::<Vec<_>>();
     let mut rows = stmt.query(())?;
     let mut first_time = true;    
-    let mut records = 0;
+    let mut records_idx = 0;
+    let mut records = Vec::new();
     while let Some(row) = rows.next()?
     {
-        records += 1;        
+        records_idx += 1;        
         if first_time
         {
-            let fields = get_field_types(row, &column_names);
+            let fields = get_field_types(&row, &column_names)?;
+            query_return.set_fields(fields);
             first_time = false;
         }
+        let values = row_as_vector_of_strings(&row)
+            .map_err(|e| EDBError::DBRusqlitepopulated(e.to_string()))?;
+        records.push(values);
     }
-    // row_as_vector_of_strings(row)
-    //     .map_err(|e| EDBError::DBRusqlitepopulated(e.to_string()))
-    if records == 0
+
+    if records_idx == 0
     {
         return Err(EDBError::DBQueryReturnedNoRows);
     }
 
-    Err(EDBError::DBConnectionNotAvailable("hola".to_string()))
+    query_return.set_records(records);
+    
+    Ok(query_return)
     
 }
 

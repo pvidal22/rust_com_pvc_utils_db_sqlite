@@ -1,13 +1,15 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub enum EDBFieldType
 {
     Null,
     Integer,
     Real,
+    #[default]
     Text,
     Blob,
 }
 
+#[derive(Default, Clone, Debug)]
 pub struct SDBField
 {
     id: String,

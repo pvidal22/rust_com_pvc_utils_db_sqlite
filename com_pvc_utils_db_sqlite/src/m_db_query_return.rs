@@ -3,6 +3,8 @@ use rusqlite::types::Type;
 use crate::m_db_field::SDBField;
 
 pub type TypeDBRowOfStrings = Vec<String>;
+
+#[derive(Default, Clone, Debug)]
 pub struct SDBQueryReturn
 {
     fields: Vec<SDBField>,
@@ -18,6 +20,16 @@ impl SDBQueryReturn
             fields,
             records,
         }
+    }
+
+    pub fn set_fields(&mut self, fields: Vec<SDBField>)
+    {
+        self.fields = fields;
+    }
+
+    pub fn set_records(&mut self, records: Vec<TypeDBRowOfStrings>)
+    {
+        self.records = records;
     }
 
     pub fn get_records(&self) -> &Vec<TypeDBRowOfStrings>
