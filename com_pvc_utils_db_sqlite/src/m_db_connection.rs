@@ -115,7 +115,9 @@ pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Resu
     println!("DEBUG");
     let mut stmt = conn.prepare_stmt_for_query(sql)?;
     let number_columns = stmt.column_count();
-    let column_names = stmt.column_names();
+    let column_names = stmt.column_names()
+        .iter().map(|x| x.to_string())
+        .collect::<Vec<_>>();
     let mut rows = stmt.query(())?;
     let mut first_time = true;    
     let mut records = 0;
@@ -139,7 +141,7 @@ pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Resu
     
 }
 
-fn get_field_types(row: &Row, column_names: &Vec<&str>) -> Result<Vec<SDBField>, EDBError>
+fn get_field_types(row: &Row, column_names: &Vec<String>) -> Result<Vec<SDBField>, EDBError>
 {
     let mut fields = Vec::new();
     println!("DEBUG row: {:?}", row);
