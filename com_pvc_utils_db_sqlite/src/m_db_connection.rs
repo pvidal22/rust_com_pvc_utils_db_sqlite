@@ -110,11 +110,13 @@ fn row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, rusqlite::E
 
 // Method to return the query records with as SDBQueryReturn. 
 // If no record is returned will be issued a EDBError:QueryReturnednoRows
-pub fn get_rows_as_query_return(stmt: &Statement, rows: &mut Rows) -> Result<TypeDBRowOfStrings, EDBError>
+pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Result<TypeDBRowOfStrings, EDBError>
 {
     println!("DEBUG");
+    let mut stmt = conn.prepare_stmt_for_query(sql)?;
     let number_columns = stmt.column_count();
     let column_names = stmt.column_names();
+    let mut rows = stmt.query(())?;
     let mut first_time = true;    
     let mut records = 0;
     while let Some(row) = rows.next()?
@@ -137,22 +139,7 @@ pub fn get_rows_as_query_return(stmt: &Statement, rows: &mut Rows) -> Result<Typ
     
 }
 
-fn get_number_of_columns(row: &Row) -> Result<usize, EDBError>
-{
-    println!("DEBUG number of columns");
-    let mut index = 0;
-    loop 
-    {
-        let col = row.get_ref(index);
-        if col.is_err()
-        {        
-            return Ok(index);
-        }
-        index += 1;
-    }    
-}
-
-fn get_field_types(row: &Row, column_names: &Vec<&str>) //-> Result<, EDBError>
+fn get_field_types(row: &Row, column_names: &Vec<&str>) -> Result<Vec<SDBField>, EDBError>
 {
     let mut fields = Vec::new();
     println!("DEBUG row: {:?}", row);
@@ -172,6 +159,6 @@ fn get_field_types(row: &Row, column_names: &Vec<&str>) //-> Result<, EDBError>
         fields.push(field);
     }
 
-    HE DE RETORNA AIXÔ.-..
+    Ok(fields)
 }
 
