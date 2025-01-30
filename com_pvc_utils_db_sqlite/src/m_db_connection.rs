@@ -1,5 +1,5 @@
 use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
-use rusqlite::{Connection, Row, Rows, Statement, Transaction};
+use rusqlite::{Connection, Row, Statement, Transaction};
 
 use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::{SDBQueryReturn, TypeDBRowOfStrings}, EDBError};
 
@@ -128,6 +128,7 @@ pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Resu
         if first_time
         {
             let fields = get_field_types(&row, &column_names)?;
+            query_return.set_number_columns(fields.len());
             query_return.set_fields(fields);
             first_time = false;
         }
@@ -158,11 +159,11 @@ fn get_field_types(row: &Row, column_names: &Vec<String>) -> Result<Vec<SDBField
         println!("DEBUG REF_Value: {:?}", column);
         let field = match column
             {
-                rusqlite::types::ValueRef::Null => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Null),
-                rusqlite::types::ValueRef::Integer(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Integer),
-                rusqlite::types::ValueRef::Real(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Real),
-                rusqlite::types::ValueRef::Text(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Text),
-                rusqlite::types::ValueRef::Blob(_) => SDBField::new(column_names.get(idx_column).unwrap(), EDBFieldType::Blob),
+                rusqlite::types::ValueRef::Null => SDBField::new(idx_column, column_names.get(idx_column).unwrap(), EDBFieldType::Null),
+                rusqlite::types::ValueRef::Integer(_) => SDBField::new(idx_column, column_names.get(idx_column).unwrap(), EDBFieldType::Integer),
+                rusqlite::types::ValueRef::Real(_) => SDBField::new(idx_column, column_names.get(idx_column).unwrap(), EDBFieldType::Real),
+                rusqlite::types::ValueRef::Text(_) => SDBField::new(idx_column, column_names.get(idx_column).unwrap(), EDBFieldType::Text),
+                rusqlite::types::ValueRef::Blob(_) => SDBField::new(idx_column, column_names.get(idx_column).unwrap(), EDBFieldType::Blob),
             };
         fields.push(field);
     }

@@ -172,31 +172,22 @@ fn db_query_return_get_fields()
             tr_record.execute(sql, ()).unwrap();
             m_db_connection::commit_transaction(tr_record).unwrap();
                         
-            let sql = "select * from tsettings where id = 'test3'";
-            let mut stmt = conn_read.prepare_stmt_for_query(sql).unwrap();
-            let columns = stmt.column_count();
-            println!("DEBUG columns names: {:?}", stmt.column_names());
-            for i in 0..columns
-            {
-                println!("DEBUG Column name: {}", stmt.column_name(i).unwrap());
-            }
-            println!("DEBUG Column count: {}", columns);
-            let mut rows = stmt.query(()).unwrap();
-            
-            let rst = m_db_connection::get_rows_as_query_return(&mut rows);
+            let sql = "select * from tsettings where id = 'test3'";            
+            let rst = m_db_connection::execute_query_without_parameters(&conn_read, sql);
             assert_eq!(rst.unwrap_err(), EDBError::DBQueryReturnedNoRows);
             
             let sql = "select * from tsettings where id = 'test1'";
-            let mut stmt = conn_read.prepare_stmt_for_query(sql).unwrap();
-            
-            let mut rows = stmt.query(()).unwrap();
-            let rst = m_db_connection::get_rows_as_query_return(&mut rows);
-            println!("DEBUG {:?}", rst);
-            // let value = value.get(1).unwrap();
-            // assert_eq!(value, "test2");
-            // db.release_connection(conn_table);
-            // db.release_connection(conn_record);
-            // db.release_connection(conn_read);
+            let rst = m_db_connection::execute_query_without_parameters(&conn_read, sql).unwrap();
+            assert_eq!(rst.get_number_of_columns(), 2);
+
+            let value = rst.get_field_value_by_name(0, "value").unwrap();
+            assert_eq!(value, "test2".to_string());
+
+            let value = rst.get_field_value_by_id(0, 1).unwrap();
+            assert_eq!(value, "test2".to_string());
+            db.release_connection(conn_table);
+            db.release_connection(conn_record);
+            db.release_connection(conn_read);
         }
     }
     
