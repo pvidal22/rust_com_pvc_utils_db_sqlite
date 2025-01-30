@@ -3,16 +3,16 @@ use crate::m_db_field::SDBField;
 pub type TypeDBRowOfStrings = Vec<String>;
 
 #[derive(Default, Clone, Debug)]
-pub struct SDBQueryReturn
+pub struct SDBQueryReturn<T>
 {
     fields: Vec<SDBField>,
-    records: Vec<TypeDBRowOfStrings>,
+    records: Vec<T>,
     number_of_columns: usize,
 }
 
-impl SDBQueryReturn
+impl<T> SDBQueryReturn<T>
 {
-    pub fn new(fields: Vec<SDBField>, records: Vec<TypeDBRowOfStrings>, number_of_columns: usize) -> Self
+    pub fn new(fields: Vec<SDBField>, records: Vec<T>, number_of_columns: usize) -> Self
     {
         SDBQueryReturn
         {
@@ -27,7 +27,7 @@ impl SDBQueryReturn
         self.fields = fields;
     }
 
-    pub fn set_records(&mut self, records: Vec<TypeDBRowOfStrings>)
+    pub fn set_records(&mut self, records: Vec<T>)
     {
         self.records = records;
     }
@@ -37,7 +37,7 @@ impl SDBQueryReturn
         self.number_of_columns = number_of_columns;
     }
 
-    pub fn get_records(&self) -> &Vec<TypeDBRowOfStrings>
+    pub fn get_records(&self) -> &Vec<T>
     {
         &self.records
     }
@@ -57,28 +57,30 @@ impl SDBQueryReturn
         self.get_records().len()
     }
 
-    pub fn get_record(&self, record_idx: usize) -> Option<&TypeDBRowOfStrings>
+    pub fn get_record(&self, record_idx: usize) -> Option<&T>
     {
         self.get_records().get(record_idx)
     }
 
     /// Method to retrieve the field value by the field id(column number)
     /// records and fields start counting from zero.
+    /// function only valid when the QueryReturn is made out of Vec<Strings>
     pub fn get_field_value_by_id(&self, record_idx: usize, field_idx: usize) -> Option<String>
     {
         let record = self.get_record(record_idx)?;
         let field = record.get(field_idx)?;
+
+        como saber si T es un vector o no.....
         Some(field.to_owned())
     }
 
     /// Method to retrieve the field value by the field_name
     /// records and fields start counting from zero.
+    /// function only valid when the QueryReturn is made out of Vec<Strings>
     pub fn get_field_value_by_name(&self, record_idx: usize, field_name: &str) -> Option<String>
     {
-        let record = self.get_record(record_idx)?;
         let field_idx = self.get_field_by_field_name(field_name)?.get_idx();
-        let field = record.get(field_idx)?;
-        Some(field.to_owned())
+        self.get_field_value_by_id(record_idx, field_idx)
     }
 
     pub fn get_field_by_index(&self, idx: usize) -> Option<&SDBField>
