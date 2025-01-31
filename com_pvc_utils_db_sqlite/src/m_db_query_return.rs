@@ -58,7 +58,7 @@ where T: TToVectorOfString
         self.fields.len()
     }
 
-    pub fn get_number_records(&self) -> usize
+    pub fn get_number_of_records(&self) -> usize
     {
         self.get_records().len()
     }
