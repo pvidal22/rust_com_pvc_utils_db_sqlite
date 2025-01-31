@@ -118,11 +118,9 @@ pub fn execute_query_without_parameters_as_vector_of_strings(conn: &SDBConnectio
     let (mut stmt, column_names) = conn.prepare_stmt_for_query(sql)?;    
     let mut rows = stmt.query(())?;
     let mut first_time = true;    
-    let mut records_idx = 0;
     let mut records = Vec::new();
     while let Some(row) = rows.next()?
     {
-        records_idx += 1;        
         if first_time
         {
             let fields = get_field_types(&row, &column_names)?;            
@@ -134,7 +132,7 @@ pub fn execute_query_without_parameters_as_vector_of_strings(conn: &SDBConnectio
         records.push(values);
     }
 
-    if records_idx == 0
+    if first_time // Not a single record
     {
         return Err(EDBError::DBQueryReturnedNoRows);
     }
