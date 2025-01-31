@@ -53,7 +53,6 @@ impl SDBConnection
         a
     }
 
-
     /// Method to start a transaction to be used with a possible rollback.
     /// # Arguments
     pub fn start_transaction(&mut self) -> Result<Transaction, EDBError>
