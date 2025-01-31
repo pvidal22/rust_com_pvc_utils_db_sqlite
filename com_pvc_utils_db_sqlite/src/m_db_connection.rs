@@ -88,7 +88,7 @@ fn row_as_vector_of_strings(row: &Row) -> Result<SRecordAsVectorOfStrings, rusql
         let raw_value = row.get_ref(lii);
         if raw_value.is_err()
             {break;}
-        log_debug!(format!("Raw_value_in_single_query: {:?}", raw_value));            
+        //log_debug!(format!("Raw_value_in_single_query: {:?}", raw_value));            
         let value_final = match raw_value.unwrap()
             {
                 rusqlite::types::ValueRef::Null => DB_NONE_VALUE.to_owned(),
