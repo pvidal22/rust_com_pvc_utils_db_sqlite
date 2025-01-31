@@ -1,6 +1,6 @@
 [package]
 name = "com_pvc_utils_db_sqlite"
-version = "1.0.4" # v.20250131_01
+version = "1.0.5" # v.20250131_02
 edition = "2021"
 
 [dependencies]

@@ -1,6 +1,6 @@
 use crate::m_db_field::SDBField;
 
-pub trait TToVectorSfString
+pub trait TToVectorOfString
 {
     fn to_vector_of_strings(&self) -> Vec<String>;
 }
@@ -13,7 +13,7 @@ pub struct SDBQueryReturn<T>
 }
 
 impl<T> SDBQueryReturn<T>
-where T: TToVectorSfString
+where T: TToVectorOfString
 {
     pub fn new(fields: Vec<SDBField>, records: Vec<T>) -> Self
     {
@@ -24,6 +24,15 @@ where T: TToVectorSfString
         }
     }
 
+    pub fn new_only_fields(fields: Vec<SDBField>) -> Self
+    {
+        SDBQueryReturn
+        {
+            fields,
+            records: Vec::new(),
+        }
+    }
+    
     pub fn set_fields(&mut self, fields: Vec<SDBField>)
     {
         self.fields = fields;

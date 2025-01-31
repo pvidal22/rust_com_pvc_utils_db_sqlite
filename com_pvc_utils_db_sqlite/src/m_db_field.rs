@@ -1,10 +1,11 @@
 #[derive(Clone, Debug, Default)]
 pub enum EDBFieldType
 {
+    #[default]
+    NotYetDefined,
     Null,
     Integer,
-    Real,
-    #[default]
+    Real,    
     Text,
     Blob,
 }

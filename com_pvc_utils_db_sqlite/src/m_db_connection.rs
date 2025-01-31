@@ -1,7 +1,7 @@
 use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
 use rusqlite::{Connection, Row, Statement, Transaction};
 
-use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::SDBQueryReturn, m_db_record_as_vector_of_strings::SRecordAsVectorOfStrings, EDBError};
+use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::{SDBQueryReturn, TToVectorOfString}, m_db_record_as_vector_of_strings::SRecordAsVectorOfStrings, EDBError};
 
 pub const DB_NONE_VALUE: &str = "None";
 pub const DB_BLOB_VALUE: &str = "Blob";
@@ -27,12 +27,23 @@ impl SDBConnection
     }
 
     #[allow(dead_code)]
-    pub fn prepare_stmt_for_query<'a>(&'a self, sql: &str) -> Result<Statement<'a>, EDBError>
+    /// Method to prepare a query and obtain teh stmt to execute it with parameters and also the template with the field names & indices
+    /// but without the field type and without records.
+    pub fn prepare_stmt_for_query<'a, T>(&'a self, sql: &str) -> Result<(Statement<'a>, SDBQueryReturn<T>), EDBError>
+    where T: TToVectorOfString
     {
         let stmt = self.connection.prepare(sql)
             .map_err(|e| EDBError::DBPrepareQuery(e.to_string()))?;
 
-        Ok(stmt)
+        let columns = obtain_column_names_from_statement(&stmt);
+        let mut fields = Vec::new();
+        for (idx, column) in columns.iter().enumerate()
+        {
+            let field = SDBField::new(idx, column, EDBFieldType::NotYetDefined);
+            fields.push(field);
+        }
+        let query_return = SDBQueryReturn::new_only_fields(fields);
+        Ok((stmt, query_return))
     }
 
     pub fn execute<P>(&self, sql: &str, params: P) -> Result<usize, EDBError>
@@ -111,12 +122,9 @@ fn row_as_vector_of_strings(row: &Row) -> Result<SRecordAsVectorOfStrings, rusql
 // Method to return the query records with as SDBQueryReturn. 
 // If no record is returned will be issued a EDBError:QueryReturnednoRows
 pub fn execute_query_without_parameters_as_vector_of_strings(conn: &SDBConnection, sql: &str) -> Result<SDBQueryReturn<SRecordAsVectorOfStrings>, EDBError>
-{
-    let mut query_return = SDBQueryReturn::default();
-    let mut stmt = conn.prepare_stmt_for_query(sql)?;
-    let column_names = stmt.column_names()
-        .iter().map(|x| x.to_string())
-        .collect::<Vec<_>>();
+{    
+    let (mut stmt, mut query_return) = conn.prepare_stmt_for_query(sql)?;
+    let column_names = obtain_column_names_from_statement(&stmt);
     let mut rows = stmt.query(())?;
     let mut first_time = true;    
     let mut records_idx = 0;
@@ -144,6 +152,14 @@ pub fn execute_query_without_parameters_as_vector_of_strings(conn: &SDBConnectio
     
     Ok(query_return)
     
+}
+
+pub fn obtain_column_names_from_statement(stmt: &Statement) -> Vec<String>
+{
+    let a = stmt.column_names()
+        .iter().map(|x| x.to_string())
+        .collect::<Vec<_>>();
+    a
 }
 
 fn get_field_types(row: &Row, column_names: &Vec<String>) -> Result<Vec<SDBField>, EDBError>
