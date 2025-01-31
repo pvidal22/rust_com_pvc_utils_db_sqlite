@@ -143,7 +143,7 @@ pub fn execute_query_without_parameters_as_vector_of_strings(conn: &SDBConnectio
     
 }
 
-pub fn obtain_column_names_from_statement(stmt: &Statement) -> Vec<String>
+fn obtain_column_names_from_statement(stmt: &Statement) -> Vec<String>
 {
     let a = stmt.column_names()
         .iter().map(|x| x.to_string())
@@ -151,7 +151,7 @@ pub fn obtain_column_names_from_statement(stmt: &Statement) -> Vec<String>
     a
 }
 
-fn get_field_types(row: &Row, column_names: &Vec<String>) -> Result<Vec<SDBField>, EDBError>
+pub fn get_field_types(row: &Row, column_names: &Vec<String>) -> Result<Vec<SDBField>, EDBError>
 {
     let mut fields = Vec::new();
     for idx_column in 0..column_names.len()
