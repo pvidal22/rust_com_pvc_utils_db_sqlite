@@ -1,24 +1,26 @@
 use crate::m_db_field::SDBField;
 
-pub type TypeDBRowOfStrings = Vec<String>;
+pub trait TToVectorSfString
+{
+    fn to_vector_of_strings(&self) -> Vec<String>;
+}
 
 #[derive(Default, Clone, Debug)]
 pub struct SDBQueryReturn<T>
 {
     fields: Vec<SDBField>,
     records: Vec<T>,
-    number_of_columns: usize,
 }
 
 impl<T> SDBQueryReturn<T>
+where T: TToVectorSfString
 {
-    pub fn new(fields: Vec<SDBField>, records: Vec<T>, number_of_columns: usize) -> Self
+    pub fn new(fields: Vec<SDBField>, records: Vec<T>) -> Self
     {
         SDBQueryReturn
         {
             fields,
             records,
-            number_of_columns,
         }
     }
 
@@ -30,11 +32,6 @@ impl<T> SDBQueryReturn<T>
     pub fn set_records(&mut self, records: Vec<T>)
     {
         self.records = records;
-    }
-
-    pub fn set_number_columns(&mut self, number_of_columns: usize)
-    {
-        self.number_of_columns = number_of_columns;
     }
 
     pub fn get_records(&self) -> &Vec<T>
@@ -49,7 +46,7 @@ impl<T> SDBQueryReturn<T>
 
     pub fn get_number_of_columns(&self) -> usize
     {
-        self.number_of_columns
+        self.fields.len()
     }
 
     pub fn get_number_records(&self) -> usize
@@ -68,10 +65,8 @@ impl<T> SDBQueryReturn<T>
     pub fn get_field_value_by_id(&self, record_idx: usize, field_idx: usize) -> Option<String>
     {
         let record = self.get_record(record_idx)?;
-        let field = record.get(field_idx)?;
-
-        como saber si T es un vector o no.....
-        Some(field.to_owned())
+        let record = record.to_vector_of_strings();
+        Some(record.get(field_idx)?.to_owned())
     }
 
     /// Method to retrieve the field value by the field_name

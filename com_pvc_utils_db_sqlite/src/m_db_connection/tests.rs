@@ -173,11 +173,11 @@ fn db_query_return_get_fields()
             m_db_connection::commit_transaction(tr_record).unwrap();
                         
             let sql = "select * from tsettings where id = 'test3'";            
-            let rst = m_db_connection::execute_query_without_parameters(&conn_read, sql);
+            let rst = m_db_connection::execute_query_without_parameters_as_vector_of_strings(&conn_read, sql);
             assert_eq!(rst.unwrap_err(), EDBError::DBQueryReturnedNoRows);
             
             let sql = "select * from tsettings where id = 'test1'";
-            let rst = m_db_connection::execute_query_without_parameters(&conn_read, sql).unwrap();
+            let rst = m_db_connection::execute_query_without_parameters_as_vector_of_strings(&conn_read, sql).unwrap();
             assert_eq!(rst.get_number_of_columns(), 2);
 
             let value = rst.get_field_value_by_name(0, "value").unwrap();

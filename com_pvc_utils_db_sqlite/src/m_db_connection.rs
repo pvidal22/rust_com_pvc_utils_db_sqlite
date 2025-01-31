@@ -1,7 +1,7 @@
 use com_pvc_utils_logs::{log_debug, m_slogs_std::*};
 use rusqlite::{Connection, Row, Statement, Transaction};
 
-use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::{SDBQueryReturn, TypeDBRowOfStrings}, EDBError};
+use crate::{m_db_field::{EDBFieldType, SDBField}, m_db_query_return::SDBQueryReturn, m_db_record_as_vector_of_strings::SRecordAsVectorOfStrings, EDBError};
 
 pub const DB_NONE_VALUE: &str = "None";
 pub const DB_BLOB_VALUE: &str = "Blob";
@@ -42,7 +42,7 @@ impl SDBConnection
             .map_err(|e| EDBError::DBExecutingQuery(e.to_string()))        
     }
 
-    pub fn get_single_query_row_as_vector_of_strings<P>(&self, sql: &str, params: P) -> Option<TypeDBRowOfStrings>
+    pub fn get_single_query_row_as_vector_of_strings<P>(&self, sql: &str, params: P) -> Option<SRecordAsVectorOfStrings>
     where P: rusqlite::Params
     {
         let a = self.connection.query_row(sql, params
@@ -71,15 +71,15 @@ pub fn commit_transaction(transaction: Transaction) -> Result<(), EDBError>
         .map_err(|e| EDBError::DBTransactionCommit(e.to_string()))?;
     Ok(())
 }
-pub fn get_row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, EDBError>
+pub fn get_row_as_vector_of_strings(row: &Row) -> Result<SRecordAsVectorOfStrings, EDBError>
 {
     row_as_vector_of_strings(row)
         .map_err(|e| EDBError::DBRusqlitepopulated(e.to_string()))
 }
 
-fn row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, rusqlite::Error>
+fn row_as_vector_of_strings(row: &Row) -> Result<SRecordAsVectorOfStrings, rusqlite::Error>
 {
-    let mut row_strings: TypeDBRowOfStrings = Vec::new();
+    let mut row_strings = Vec::new();
     let mut lii = 0; // Starting from field 0
     loop
     {            
@@ -104,16 +104,15 @@ fn row_as_vector_of_strings(row: &Row) -> Result<TypeDBRowOfStrings, rusqlite::E
     }
     else
     {
-        Ok(row_strings)            
+        Ok(SRecordAsVectorOfStrings::new(row_strings))
     }        
 }
 
 // Method to return the query records with as SDBQueryReturn. 
 // If no record is returned will be issued a EDBError:QueryReturnednoRows
-pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Result<SDBQueryReturn, EDBError>
+pub fn execute_query_without_parameters_as_vector_of_strings(conn: &SDBConnection, sql: &str) -> Result<SDBQueryReturn<SRecordAsVectorOfStrings>, EDBError>
 {
     let mut query_return = SDBQueryReturn::default();
-    println!("DEBUG");
     let mut stmt = conn.prepare_stmt_for_query(sql)?;
     let column_names = stmt.column_names()
         .iter().map(|x| x.to_string())
@@ -127,8 +126,7 @@ pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Resu
         records_idx += 1;        
         if first_time
         {
-            let fields = get_field_types(&row, &column_names)?;
-            query_return.set_number_columns(fields.len());
+            let fields = get_field_types(&row, &column_names)?;            
             query_return.set_fields(fields);
             first_time = false;
         }
@@ -151,12 +149,10 @@ pub fn execute_query_without_parameters(conn: &SDBConnection, sql: &str) -> Resu
 fn get_field_types(row: &Row, column_names: &Vec<String>) -> Result<Vec<SDBField>, EDBError>
 {
     let mut fields = Vec::new();
-    println!("DEBUG row: {:?}", row);
     for idx_column in 0..column_names.len()
     {
         let column = row.get_ref(idx_column).unwrap();
-        
-        println!("DEBUG REF_Value: {:?}", column);
+       
         let field = match column
             {
                 rusqlite::types::ValueRef::Null => SDBField::new(idx_column, column_names.get(idx_column).unwrap(), EDBFieldType::Null),
