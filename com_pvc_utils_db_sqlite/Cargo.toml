@@ -1,9 +1,12 @@
 [package]
 name = "com_pvc_utils_db_sqlite"
-version = "1.0.6" # v.20250201_01
+version = "1.0.7" # v.20250201_02
 edition = "2021"
 
 [dependencies]
 rusqlite = {version = "^0.33", features = ["bundled"]}
 com_pvc_utils_pool = {git = "https:/github.com/pvidal22/rust_com_pvc_utils_pool.git"}
 com_pvc_utils_logs = {git = "https:/github.com/pvidal22/rust_com_pvc_utils_logs.git"}
+serde_json = {version = "^1.0"}
+serde = {version = "^1.0", features = ["derive"]}
+

@@ -1,7 +1,9 @@
 use std::ops::Deref;
+use serde::Serialize;
+
 use crate::m_traits::TToVectorOfString;
 
-#[derive(Default, Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize)]
 pub struct SRecordAsVectorOfStrings
 {
     fields: Vec<String>

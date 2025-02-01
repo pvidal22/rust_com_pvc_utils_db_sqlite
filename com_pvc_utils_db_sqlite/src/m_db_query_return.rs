@@ -1,6 +1,8 @@
-use crate::{m_db_field::SDBField, m_traits::TToVectorOfString};
+use serde::{Deserialize, Serialize};
 
-#[derive(Default, Clone, Debug)]
+use crate::{m_db_field::SDBField, m_traits::TToVectorOfString, EDBError};
+
+#[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct SDBQueryReturn<T>
 {
     fields: Vec<SDBField>,
@@ -8,7 +10,7 @@ pub struct SDBQueryReturn<T>
 }
 
 impl<T> SDBQueryReturn<T>
-where T: TToVectorOfString
+where T: TToVectorOfString + Serialize
 {
     pub fn new(fields: Vec<SDBField>, records: Vec<T>) -> Self
     {
@@ -94,5 +96,11 @@ where T: TToVectorOfString
     {
         let fields = self.get_fields();
         fields.iter().find(|x| x.get_name() == field_name)
+    }
+
+    pub fn serialize(&self) -> Result<String, EDBError>
+    {
+        serde_json::to_string(&self)
+            .map_err(|e| EDBError::DBSerializeError(e.to_string()))
     }
 }

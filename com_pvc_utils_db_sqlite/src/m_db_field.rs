@@ -1,4 +1,6 @@
-#[derive(Clone, Debug, Default)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub enum EDBFieldType
 {
     #[default]
@@ -10,7 +12,7 @@ pub enum EDBFieldType
     Blob,
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct SDBField
 {
     field_idx: usize,

@@ -8,6 +8,7 @@
 //! version = "1.0.4" # v.20250131_01 Use the generic types for the managing the SDBQueryReturn
 //! version = "1.0.5" # v.20250131_02 The prepare connection will return as well information about the fields.
 //! version = "1.0.6" # v.20250201_01 Change the location of the trait TToVectorOfString
+//! version = "1.0.7" # v.20250201_02 Added the capability to serialize directly from here.
 
 pub mod m_db_connection;
 pub mod m_db_field;
@@ -26,6 +27,8 @@ pub enum EDBError
     DBTransactionCommit(String),
     DBGettingFieldType(String),
     DBRusqlitepopulated(String),
+    DBSerializeError(String),
+    DBDeserializeError(String),
     DBQueryReturnedNoRows,
 }
 
