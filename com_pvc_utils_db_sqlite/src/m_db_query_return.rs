@@ -1,9 +1,4 @@
-use crate::m_db_field::SDBField;
-
-pub trait TToVectorOfString
-{
-    fn to_vector_of_strings(&self) -> Vec<String>;
-}
+use crate::{m_db_field::SDBField, m_traits::TToVectorOfString};
 
 #[derive(Default, Clone, Debug)]
 pub struct SDBQueryReturn<T>

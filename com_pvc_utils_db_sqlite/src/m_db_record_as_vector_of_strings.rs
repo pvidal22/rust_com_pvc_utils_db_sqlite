@@ -1,6 +1,5 @@
 use std::ops::Deref;
-
-use crate::m_db_query_return::TToVectorOfString;
+use crate::m_traits::TToVectorOfString;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct SRecordAsVectorOfStrings
